@@ -1,2 +1,2 @@
-# frontend-signalee
-notes for frontend-signalee proyect
+# signalee-notes
+notes for the signalee proyect
