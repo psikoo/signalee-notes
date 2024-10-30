@@ -195,4 +195,187 @@ const superCar = new SuperCar(true, "Ferrari", "womp", 10);
 console.log(superCar)
 
 // abstract classes
-// https://learntypescript.dev/05/l4-extending
+abstract class Product  {
+    private name?:string;
+    private prize?:number;
+    setName(newName:string):void { this.name = newName; }
+    setPrize(newName:string):void { this.name = newName; }
+    getName():string|undefined { return this.name; }
+    getPrize():number|undefined { return this.prize; }
+    constructor(name:string, prize:number) {
+        this.name = name;
+        this.prize = prize;
+    } 
+}
+class Furniture extends Product {
+    constructor(name:string, prize:number) {
+        super(name, prize);
+    } 
+}
+const product = new Furniture("Chair", 100); // Class Product cant be called as its abstract
+console.log(product);
+
+//! Generics
+//* T (for Type)
+//* S (for Sate)
+//* E (for Element)
+//* K (for Key)
+//* V (for Value)
+
+// Generic functions
+function firstOrNull<T>(array: T[]): T | null {     // <T> is a generic type 
+    return array.length === 0 ? null : array[0];    // that must be defined when calling the function
+}
+console.log(firstOrNull<string>(["Rod", "Jane", "Fred"]));
+console.log(firstOrNull<number>([1, 2, 3]));
+
+// Generic interface and types (types are generally better and have mostly the same use)
+interface Contact1 {
+    name: string;
+    email: string;
+}
+type Form<T> = {
+    errors: {
+        [K in keyof T]?: string;
+    };
+    values: T;
+}
+const contactForm:Form<Contact1> = {
+    errors: {
+        name: "This must be a name",
+        email: "This must be a valid email address"
+    },
+    values: {
+        name: "Bob",
+        email: "bob@someemail.com",
+    },
+};
+console.log(contactForm.errors.email);
+
+// Generic classes 
+class List<T> {
+    public items:Array<T> = [];
+    add(item:T) {
+        this.items.push(item);
+    }
+}
+const numberList = new List<number>();
+numberList.add(7); numberList.add(6); numberList.add(9);
+console.log(numberList);
+const stringList = new List<string>();
+stringList.add("b"); stringList.add("g"); stringList.add("l");
+console.log(stringList);
+
+// Generic parameter defaults
+interface Component<T1 = string, T2 = string> {
+    name:T1;
+    props:{
+        text:T2,
+    },
+    log():void;
+}
+const button:Component<string, number> = {
+    name: "Button",
+    props: {
+        text: 3,
+    },
+    log: () => console.log("Save button"),
+};
+console.log(button.props.text);
+
+// Constraining generic types
+function logItems<T extends Component>(items: T[]): void { // Only generic classes that implement all of Component can be used
+    items.forEach(item => item.log());
+}
+const button1:Component = {
+    name: "Button",
+    props: {
+        text: "1",
+    },
+    log: () => console.log("button1"),
+};
+const button2:Component = {
+    name: "Button",
+    props: {
+        text: "2",
+    },
+    log: () => console.log("button2"),
+};
+logItems([button1, button2])
+
+//! Type assertion
+//* ! = not null or undefined
+//* :NonNullable<T> removes null or undefined from the scope of the given type 
+
+function duplicate(text:string) {
+    return text!.concat(text);
+}
+console.log(duplicate("Womp"));
+
+// typeof
+console.log(typeof "this is a string"); // returns type
+// instanceof
+const nowDate:Date = new Date();
+console.log(nowDate instanceof Date); // returns if something is an instance of a class
+// in
+type J = { x: number; }
+type K = { y: string; }
+let q:J|K = { x: 3 };
+if ("x" in q) console.log("Type is J");
+else console.log("Type is K");
+// is
+interface Person5 { firstName: string; surname: string; }
+interface Organization5 { name: string; }
+type Contact5 = Person5|Organization5;
+function sayHello(contact: Contact5) {
+    if(isPerson(contact)) console.log(contact.firstName);
+    else console.log(contact.name);
+}
+function isPerson(contact:Contact5):contact is Person5 { return (contact as Person5).firstName !== undefined; }
+const bob:Person5 = { firstName: "Bob", surname: "Young" };
+const redBricks:Organization5 = { name: "Red Bricks" };
+sayHello(bob);
+sayHello(redBricks);
+
+// assert is // useless?
+function sayHello2(contact: Contact5) {
+    assertIsPerson(contact);
+    console.log(contact.firstName);
+}
+function assertIsPerson(contact:Contact5):asserts contact is Person5 {
+    if ((contact as Person5).firstName === undefined) {
+        throw new Error("Not a person");
+    }
+}
+sayHello2(bob);
+
+// Mapped types 
+type contact6 = {
+    name: string;
+    email?: string;
+    age?:number
+}
+type MappedTypeScores = { [K in keyof contact6]:string };
+const scoreBob:MappedTypeScores = { name:"Bob", email:"@gmail.com" }
+
+//! mapped type modifiers
+//* [K in keyof T]?:type            only required keys
+//* [K in keyof T]-?:type           required and non required keys
+//* readonly [K in keyof T]:type    only readonly keys
+//* -readonly [K in keyof T]:type   only writable keys
+
+type RequiredProperties<T> = {
+    [K in keyof T]?:T[K]; //* lookup type or indexed access type
+};
+const bib:RequiredProperties<contact6> = {
+    name: "Bib",
+    email: "Bib",
+    age:30,
+};
+console.log(bib);
+
+// Conditional types
+type RemoveNull<T> = T extends null ? never : T;
+let firstName1:RemoveNull<string> = "Ebert";
+let firstNumber1:NonNullable<number> = 1;
+console.log(firstName1 + firstNumber1); 
