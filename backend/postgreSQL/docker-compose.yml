@@ -1,0 +1,26 @@
+services:
+  db:
+    container_name: postgres
+    image: postgres
+    restart: always
+    command: -c config_file=/etc/postgresql.conf
+    environment:
+      POSTGRES_DB: signaleeDB
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./conf/postgresql.conf:/etc/postgresql.conf
+      - /var/lib/postgresql/data
+  pgadmin:
+    container_name: pgadmin
+    image: dpage/pgadmin4
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: root
+    ports:
+      - "5050:80"
+    depends_on:
+      - db
